@@ -63,13 +63,11 @@ class KakaoLogin:
 		x_vc = "JOSH|" + self.headers["User-Agent"] + "|AUSTIN|" + self.data["email"]  + "|" + self.data["device_uuid"]
 		hashed_x_vc = hashlib.sha512(x_vc).hexdigest()
 
-		return x_vc[:16]
+		return hashed_x_vc[:16]
 
 	def generate_device_uuid(self):
 		device_uuid = "088BE760-07E1-11E4-9191-0800200C9A66"
-		sha1_hashed_device_uuid = hashlib.sha1(device_uuid).hexdigest()
-		sha256_hashed_device_uuid = hashlib.sha256(device_uuid).hexdigest()
-
-		sha_hashed = sha1_hashed_device_uuid + sha256_hashed_device_uuid
+		sha1_hashed_device_uuid = hashlib.sha1(device_uuid).digest()
+		sha256_hashed_device_uuid = hashlib.sha256(device_uuid).digest()
 		
-		return base64.b64encode(sha_hashed)
+		return base64.b64encode(sha1_hashed_device_uuid + sha256_hashed_device_uuid)
