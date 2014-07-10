@@ -4,6 +4,7 @@ import requests
 import json
 import hashlib
 import sys
+import base64
 
 
 class KakaoLogin:
@@ -31,10 +32,10 @@ class KakaoLogin:
 	def __init__(self, email, password):
 		self.data["email"] = email
 		self.data["password"] = password
-		self.data["device_uuid"] = "088BE760-07E1-11E4-9191-0800200C9A66"
 		self.data["name"] = "meal.menu.bot"
 		self.data["auto_login"] = False
 		
+		self.data["device_uuid"] = self.generate_device_uuid()
 		self.headers["X_VC"] = self.generate_x_vc_token()
 
 	def login(self):
@@ -60,7 +61,15 @@ class KakaoLogin:
 		#0.9.0 = JOSH, AUSTIN
 		#0.9.1 = NITSUA, HSOJ
 		x_vc = "JOSH|" + self.headers["User-Agent"] + "|AUSTIN|" + self.data["email"]  + "|" + self.data["device_uuid"]
-		x_vc = hashlib.sha512(x_vc).hexdigest()
-		x_vc = x_vc[:16]
+		hashed_x_vc = hashlib.sha512(x_vc).hexdigest()
 
-		return x_vc
+		return x_vc[:16]
+
+	def generate_device_uuid(self):
+		device_uuid = "088BE760-07E1-11E4-9191-0800200C9A66"
+		sha1_hashed_device_uuid = hashlib.sha1(device_uuid).hexdigest()
+		sha256_hashed_device_uuid = hashlib.sha256(device_uuid).hexdigest()
+
+		sha_hashed = sha1_hashed_device_uuid + sha256_hashed_device_uuid
+		
+		return base64.b64encode(sha_hashed)
