@@ -39,7 +39,7 @@ class KakaoLogin:
 
 	def login(self):
 		self.login_request()
-		self.ilogin_registration()
+		self.login_registration()
 
 	def login_request(self):
 		request = requests.post(self.kakao_url["LOGIN_URL"], data=self.data, headers=self.headers)
@@ -60,7 +60,7 @@ class KakaoLogin:
 		#0.9.0 = JOSH, AUSTIN
 		#0.9.1 = NITSUA, HSOJ
 		x_vc = "JOSH|" + self.headers["User-Agent"] + "|AUSTIN|" + self.data["email"]  + "|" + self.data["device_uuid"]
-		hashed_x_vc = hashlib.sha512(x_vc).hexdigest()
-		hashed_x_vc = hashed_x_vc[:16]
-		
-		return hashed_x_vc
+		x_vc = hashlib.sha512(x_vc).hexdigest()
+		x_vc = x_vc[:16]
+
+		return x_vc
