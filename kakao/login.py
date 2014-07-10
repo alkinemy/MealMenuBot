@@ -36,7 +36,7 @@ class KakaoLogin:
 		self.data["auto_login"] = False
 		
 		self.data["device_uuid"] = self.generate_device_uuid()
-		self.headers["X_VC"] = self.generate_x_vc_token()
+		self.headers["X-VC"] = self.generate_x_vc_token()
 
 	def login(self):
 		self.login_request()
