@@ -5,79 +5,107 @@ import json
 import hashlib
 import sys
 import base64
-
+import config
 
 class KakaoLogin:
-	kakao_url = {
-		"LOGIN_URL" : "https://sb-talk.kakao.com/api/v1/sub_device/login"
-	}
+	def __init__(self):
+		self.__initialize_session_key()
+		self.__initialize_url()
+		self.__initialize_data()
+		self.__initialize_header()
 
-	headers = {
-		"A" : "mac/0.9.0/ko",
-		"Accept" : "application/json",
-		"Accept-Language" : "ko",
-		"Content-Type" : "application/x-www-form-urlencoded; charset=utf-8",
-		"User-Agent" : "KT/0.9.0 Mc/10.9 ko",
-		"X-VC" : ""
-	}
+	def __initialize_session_key(self):
+		self.__session_key = ""
 
-	data = {
-		"email" : "",
-		"password" : "",
-		"device_uuid" : "",
-		"name" : "",
-		"auto_login" : ""
-	}
+	def __initialize_url(self):
+		self.__url = {}
+		self.__url["LOGIN_URL"] = "https://sb-talk.kakao.com/api/v1/sub_device/login"
 
-	def __init__(self, email, password):
-		self.data["email"] = email
-		self.data["password"] = password
-		self.data["name"] = "meal.menu.bot"
-		self.data["auto_login"] = False
-		
-		self.data["device_uuid"] = self.generate_device_uuid()
-		self.headers["X-VC"] = self.generate_x_vc_token()
+	def __initialize_data(self):
+		self.__data = {}
+		self.__data["email"] = config.USER["EMAIL"]
+		self.__data["password"] = config.USER["PASSWORD"]
+		self.__data["name"] = config.USER["NAME"]
+		self.__data["auto_login"] = False
+		self.__data["device_uuid"] = self.__generate_device_uuid()
+
+	def __initialize_header(self):
+		self.__headers = {}
+		self.__headers["A"] = "mac/0.9.0/ko"
+		self.__headers["Accept"] = "application/json"
+		self.__headers["Accept-Language"] = "ko"
+		self.__headers["Content-Type"] = "application/x-www-form-urlencoded; charset=utf-8"
+		self.__headers["User-Agent"] = "KT/0.9.0 Mc/10.9 ko"
+		self.__headers["X-VC"] = self.__generate_x_vc_token()
 
 	def login(self):
-		self.login_request()
-		self.login_registration()
+		self.__send_login_request()
+		print(self.get_session_key())
+		print "login_request success"
 
-	def login_request(self):
-		request = requests.post(self.kakao_url["LOGIN_URL"], data=self.data, headers=self.headers)
+	def __send_login_request(self):
+		request = requests.post(self.__url["LOGIN_URL"], data=self.__data, headers=self.__headers)
 		response = json.loads(request.text)
-
-		print response
-
-		if (response["status"] != -100):
+		
+		if (self.__is_registration_needed(response["status"])):
+			self.__do_login_request_registration()
+			self.__do_login_accept_registration()
+		elif (self.__is_request_success(response["status"])):
+			self.__set_session_key(response["sessionKey"])
+		else:
+			print response
 			print "error login_request"
 			sys.exit()
-		else:
-			print "login_request success"
 
-	def login_registration(self):
-		self.data["once"] = False
-		request = requests.post(self.kakao_url["LOGIN_URL"], data=self.data, headers=self.headers)
+
+	def __do_login_request_registration(self):
+		self.__data["once"] = False
+		request = requests.post(self.__url["LOGIN_URL"], data=self.__data, headers=self.__headers)
 		response = json.loads(request.text)
 
-		print response
-
-		if (response["status"] != 0):
-			print "error login_registration"
+		if (not self.__is_request_success(response["status"])):
+			print response
+			print "error login_request_registration"
 			sys.exit()
-		else:
-			print "login_registration success"
+			
+	def __do_login_accept_registration(self):
+		self.__data["forced"] = False
+		self.__data["passcode"] = raw_input("input passcode: ")
 
-	def generate_x_vc_token(self):
+		request = requests.post(self.__url["LOGIN_URL"], data=self.__data, headers=self.__headers)
+		response = json.loads(request.text)
+
+		if (self.__is_request_success(response["status"])):
+			self.__set_session_key(response["sessionKey"])
+			print "login_accept_registration success"
+		else:
+			print response
+			print "error login_accept_registration"
+			sys.exit()
+
+	def __is_request_success(self, status):
+		return (status == 0)
+
+	def __is_registration_needed(self, status):
+		return (status == -100)
+
+	def get_session_key(self):
+		return self.__session_key
+
+	def __set_session_key(self, session_key):
+		self.__session_key = session_key
+
+	def __generate_x_vc_token(self):
 		#Change "NITSUA" and "HSOJ" if kakao version is updated
 		#0.9.0 = JOSH, AUSTIN
 		#0.9.1 = NITSUA, HSOJ
-		x_vc = "JOSH|" + self.headers["User-Agent"] + "|AUSTIN|" + self.data["email"]  + "|" + self.data["device_uuid"]
+		x_vc = "JOSH|" + self.__headers["User-Agent"] + "|AUSTIN|" + self.__data["email"]  + "|" + self.__data["device_uuid"]
 		hashed_x_vc = hashlib.sha512(x_vc).hexdigest()
 
 		return hashed_x_vc[:16]
 
-	def generate_device_uuid(self):
-		device_uuid = "088BE760-07E1-11E4-9191-0800200C9A66"
+	def __generate_device_uuid(self):
+		device_uuid = config.USER["DEVICE_UUID"]
 		sha1_hashed_device_uuid = hashlib.sha1(device_uuid).digest()
 		sha256_hashed_device_uuid = hashlib.sha256(device_uuid).digest()
 		
