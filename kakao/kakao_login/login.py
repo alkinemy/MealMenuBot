@@ -47,7 +47,7 @@ class KakaoLogin:
 
 	def login(self):
 		self.__send_login_request()
-		print (self.get_session_key())
+		print (self.get_user_key())
 		print ("login_request success")
 
 	def __send_login_request(self):
@@ -93,6 +93,9 @@ class KakaoLogin:
 	def get_session_key(self):
 		return self.__session_key
 
+	def get_user_key(self):
+		return self.__session_key + "-" + self.__data["device_uuid"]
+
 	def __set_session_key(self, session_key):
 		self.__session_key = session_key
 
@@ -113,3 +116,7 @@ class KakaoLogin:
 		sha256_hashed_device_uuid = hashlib.sha256(device_uuid).digest()
 
 		return base64.b64encode(sha1_hashed_device_uuid + sha256_hashed_device_uuid).decode("UTF-8")
+
+
+kakao = KakaoLogin()
+kakao.login()
