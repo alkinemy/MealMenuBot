@@ -7,6 +7,13 @@ import sys
 import base64
 import config
 
+import sys
+import os
+
+sys.path.append(os.path.abspath("../kakao_status"))
+
+from response_status import KakaoResponseStatus
+
 class KakaoLogin:
 	def __init__(self):
 		self.__initialize_session_key()
@@ -40,21 +47,21 @@ class KakaoLogin:
 
 	def login(self):
 		self.__send_login_request()
-		print(self.get_session_key())
-		print "login_request success"
+		print (self.get_session_key())
+		print ("login_request success")
 
 	def __send_login_request(self):
 		request = requests.post(self.__url["LOGIN_URL"], data=self.__data, headers=self.__headers)
 		response = json.loads(request.text)
 		
-		if (self.__is_registration_needed(response["status"])):
+		if (KakaoResponseStatus().is_registration_required(response["status"])):
 			self.__do_login_request_registration()
 			self.__do_login_accept_registration()
-		elif (self.__is_request_success(response["status"])):
+		elif (KakaoResponseStatus().is_request_success(response["status"])):
 			self.__set_session_key(response["sessionKey"])
 		else:
-			print response
-			print "error login_request"
+			print (response)
+			print ("error login_request")
 			sys.exit()
 
 
@@ -63,31 +70,25 @@ class KakaoLogin:
 		request = requests.post(self.__url["LOGIN_URL"], data=self.__data, headers=self.__headers)
 		response = json.loads(request.text)
 
-		if (not self.__is_request_success(response["status"])):
-			print response
-			print "error login_request_registration"
+		if (not KakaoResponseStatus().is_request_success(response["status"])):
+			print (response)
+			print ("error login_request_registration")
 			sys.exit()
 			
 	def __do_login_accept_registration(self):
 		self.__data["forced"] = False
-		self.__data["passcode"] = raw_input("input passcode: ")
+		self.__data["passcode"] = input("input passcode: ")
 
 		request = requests.post(self.__url["LOGIN_URL"], data=self.__data, headers=self.__headers)
 		response = json.loads(request.text)
 
-		if (self.__is_request_success(response["status"])):
+		if (KakaoResponseStatus().is_request_success(response["status"])):
 			self.__set_session_key(response["sessionKey"])
-			print "login_accept_registration success"
+			print ("login_accept_registration success")
 		else:
-			print response
-			print "error login_accept_registration"
+			print (response)
+			print ("error login_accept_registration")
 			sys.exit()
-
-	def __is_request_success(self, status):
-		return (status == 0)
-
-	def __is_registration_needed(self, status):
-		return (status == -100)
 
 	def get_session_key(self):
 		return self.__session_key
@@ -100,13 +101,15 @@ class KakaoLogin:
 		#0.9.0 = JOSH, AUSTIN
 		#0.9.1 = NITSUA, HSOJ
 		x_vc = "JOSH|" + self.__headers["User-Agent"] + "|AUSTIN|" + self.__data["email"]  + "|" + self.__data["device_uuid"]
+		x_vc = x_vc.encode("UTF-8")
+
 		hashed_x_vc = hashlib.sha512(x_vc).hexdigest()
 
 		return hashed_x_vc[:16]
 
 	def __generate_device_uuid(self):
-		device_uuid = config.USER["DEVICE_UUID"]
+		device_uuid = config.USER["DEVICE_UUID"].encode("UTF-8")
 		sha1_hashed_device_uuid = hashlib.sha1(device_uuid).digest()
 		sha256_hashed_device_uuid = hashlib.sha256(device_uuid).digest()
-		
-		return base64.b64encode(sha1_hashed_device_uuid + sha256_hashed_device_uuid)
+
+		return base64.b64encode(sha1_hashed_device_uuid + sha256_hashed_device_uuid).decode("UTF-8")
