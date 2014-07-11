@@ -46,15 +46,26 @@ class KakaoLogin:
 		request = requests.post(self.kakao_url["LOGIN_URL"], data=self.data, headers=self.headers)
 		response = json.loads(request.text)
 
-		if response["status"] != -100:
-			print response
+		print response
+
+		if (response["status"] != -100):
 			print "error login_request"
 			sys.exit()
 		else:
 			print "login_request success"
 
 	def login_registration(self):
-		return
+		self.data["once"] = False
+		request = requests.post(self.kakao_url["LOGIN_URL"], data=self.data, headers=self.headers)
+		response = json.loads(request.text)
+
+		print response
+
+		if (response["status"] != 0):
+			print "error login_registration"
+			sys.exit()
+		else:
+			print "login_registration success"
 
 	def generate_x_vc_token(self):
 		#Change "NITSUA" and "HSOJ" if kakao version is updated
