@@ -116,7 +116,3 @@ class KakaoLogin:
 		sha256_hashed_device_uuid = hashlib.sha256(device_uuid).digest()
 
 		return base64.b64encode(sha1_hashed_device_uuid + sha256_hashed_device_uuid).decode("UTF-8")
-
-
-kakao = KakaoLogin()
-kakao.login()
