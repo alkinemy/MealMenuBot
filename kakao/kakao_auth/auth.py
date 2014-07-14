@@ -3,16 +3,14 @@
 import requests
 import json
 import hashlib
-import sys
 import base64
-import config
-
 import sys
 import os
 
 sys.path.append(os.path.abspath("../kakao_status"))
 
 from response_status import KakaoResponseStatus
+import config
 
 class KakaoAuth:
 	def __init__(self):
