@@ -11,10 +11,6 @@ class LocoPacketBase:
 		#TODO
 		pass
 
-	def decrypt_by_aes(self, data):
-		#TODO
-		pass
-
 	def encrypt_by_rsa(self, data):
 		#TODO
 		pass
