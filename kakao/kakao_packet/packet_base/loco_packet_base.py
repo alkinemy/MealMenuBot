@@ -33,7 +33,7 @@ class LocoPacketBase:
 
 		return rsa.encrypt(data, public_key)
 
-	def encode_by_pkcs7(self, data):
+	def __encode_by_pkcs7(self, data):
 		block_size = 16
 		data_length = len(data)
 		amount_to_pad = block_size - (data_length % block_size)
