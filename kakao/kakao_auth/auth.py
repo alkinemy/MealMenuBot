@@ -14,7 +14,7 @@ sys.path.append(os.path.abspath("../kakao_status"))
 
 from response_status import KakaoResponseStatus
 
-class KakaoLogin:
+class KakaoAuth:
 	def __init__(self):
 		self.__initialize_session_key()
 		self.__initialize_url()
@@ -45,37 +45,37 @@ class KakaoLogin:
 		self.__headers["User-Agent"] = "KT/0.9.0 Mc/10.9 ko"
 		self.__headers["X-VC"] = self.__generate_x_vc_token()
 
-	def login(self):
-		self.__send_login_request()
+	def auth(self):
+		self.__send_auth_request()
 		print (self.get_user_key())
-		print ("login_request success")
+		print ("auth_request success")
 
-	def __send_login_request(self):
+	def __send_auth_request(self):
 		request = requests.post(self.__url["LOGIN_URL"], data=self.__data, headers=self.__headers)
 		response = json.loads(request.text)
 		
 		if (KakaoResponseStatus().is_registration_required(response["status"])):
-			self.__do_login_request_registration()
-			self.__do_login_accept_registration()
+			self.__do_auth_request_registration()
+			self.__do_auth_accept_registration()
 		elif (KakaoResponseStatus().is_request_success(response["status"])):
 			self.__set_session_key(response["sessionKey"])
 		else:
 			print (response)
-			print ("error login_request")
+			print ("error auth_request")
 			sys.exit()
 
 
-	def __do_login_request_registration(self):
+	def __do_auth_request_registration(self):
 		self.__data["once"] = False
 		request = requests.post(self.__url["LOGIN_URL"], data=self.__data, headers=self.__headers)
 		response = json.loads(request.text)
 
 		if (not KakaoResponseStatus().is_request_success(response["status"])):
 			print (response)
-			print ("error login_request_registration")
+			print ("error auth_request_registration")
 			sys.exit()
 			
-	def __do_login_accept_registration(self):
+	def __do_auth_accept_registration(self):
 		self.__data["forced"] = False
 		self.__data["passcode"] = input("input passcode: ")
 
@@ -84,10 +84,10 @@ class KakaoLogin:
 
 		if (KakaoResponseStatus().is_request_success(response["status"])):
 			self.__set_session_key(response["sessionKey"])
-			print ("login_accept_registration success")
+			print ("auth_accept_registration success")
 		else:
 			print (response)
-			print ("error login_accept_registration")
+			print ("error auth_accept_registration")
 			sys.exit()
 
 	def get_session_key(self):
