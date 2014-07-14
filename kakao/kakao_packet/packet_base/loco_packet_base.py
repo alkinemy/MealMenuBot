@@ -12,8 +12,9 @@ except ImportError, e:
 
 class LocoPacketBase:
 	def __init__(self):
+		self.block_size = 16
 		self.aes = {}
-		self.aes["key"] = "\x00" * 16 #TODO Change AES key
+		self.aes["key"] = "\x00" * self.block_size #TODO Change AES key
 		self.aes["IV"] = "locoforever\x00\x00\x00\x00\x00"
 
 	def create(self, command, args):
@@ -34,9 +35,7 @@ class LocoPacketBase:
 		return rsa.encrypt(data, public_key)
 
 	def __encode_by_pkcs7(self, data):
-		block_size = 16
 		data_length = len(data)
-		amount_to_pad = block_size - (data_length % block_size)
-		amount_to_pad = (block_size, amount_to_pad) [amount_to_pad != 0]
+		amount_to_pad = self.block_size + (0, - (data_length % self.block_size)) [amount_to_pad != 0]
 
 		return data + unhexlify("%02x" % amount_to_pad) * amount_to_pad

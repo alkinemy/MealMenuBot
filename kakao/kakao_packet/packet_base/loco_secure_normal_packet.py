@@ -13,20 +13,17 @@ class LocoSequreNormalPacket(LocoPacketBase):
 	def create(self, command, args):
 		body_contents = LocoPacket().create(command, args)
 
-		aes_encrypted_body_contents = self.__encrypt_data_by_aes(body_contents)
-		aes_encrypted_body_length = len(aes_encrypted_body_contents)
-
-		return aes_encrypted_body_length + aes_encrypted_body_contents
+		return self.__encrypt_data_by_aes(body_contents)
 
 	def __encrypt_data_by_aes(self, data):
 		packet = ""
 
-		encrypt_target_length = (len(data) / 16 + 1) * 16
-		while (encrypt_target_length > 0):
+		encrypt_target_length = (len(data) / self.block_size + 1) * self.block_size
+		while(encrypt_target_length > 0):
 			packet += self.__encrypt_data_less_than_2048_bytes_by_aes(data[:2047])
 
 			data = data[2048:]
-			encrypt_target_length = (len(data) / 16 + 1) * 16
+			encrypt_target_length = ((len(data) / self.block_size + 1) * self.block_size, 0) [len(data) == 0]
 
 		return packet
 
