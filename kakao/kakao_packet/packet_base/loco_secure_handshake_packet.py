@@ -9,11 +9,12 @@ class LocoSecureHandshakePacket(LocoPacketBase):
 
 	#Override
 	def create(self, command, args):
-		aes_key = "\x00" * 16 #TODO fix
+		return (self.__generate_handshake() + LocoSecureNormalPacket().create(command, args))
 
-		handshake = "\x80\x00\x00\x00"
-		handshake += "\x01\x00\x00\x00"
-		handshake += "\x01\x00\x00\x00"
-		handshake += self.encrypt_rsa(aes_key)
+	def __generate_handshake(self):
+		encrypted_data_block_length = "\x80\x00\x00\x00"
+		handshake_type = "\x01\x00\x00\x00"
+		encrypt_type = "\x01\x00\x00\x00"
+		encrypted_data += self.encrypt_by_rsa(self.aes["key"])
 
-		return (handshake + LocoSecureNormalPacket().create(command, args))
+		return encrypted_data_block_length + handshake_type + encrypt_type + encrypted_data

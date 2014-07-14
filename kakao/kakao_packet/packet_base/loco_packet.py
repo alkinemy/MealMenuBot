@@ -6,7 +6,7 @@ from loco_packet_base import LocoPacketBase
 try:
 	from bson import BSON
 except ImportError, e:
-	print ("Import Error %s", e)
+	print ("Import Error %s" % e)
 	sys.exit()
 
 class LocoPacket(LocoPacketBase):
@@ -17,6 +17,7 @@ class LocoPacket(LocoPacketBase):
 	def create(self, command, args):
 		packet_id = "\xFF\xFF\xFF\xFF"
 		status_code = "\x00\x00"
+		#method = command + null padding(total 11bytes)
 		method = command + ("\x00" * (11 - len(command)))
 		body_type = "\x00"
 		body_contents = BSON.encode(args)

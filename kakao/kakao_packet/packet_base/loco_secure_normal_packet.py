@@ -19,24 +19,20 @@ class LocoSequreNormalPacket(LocoPacketBase):
 		return aes_encrypted_body_length + aes_encrypted_body_contents
 
 	def __encrypt_data_by_aes(self, data):
-		#encrypt - need more information
 		packet = ""
 
-		data_length = len(data)
-		encrypt_target_length = (data_length / 16 + 1) * 16
-		while (encrypt_target_length > 2048):
-			encrypt_target = data[:2047]
-			aes_encrypted_data = self.encrypt_aes(encrypt_target)
-			aes_encrypted_data_length = len(aes_encrypted_data)
-			
-			packet += struct.pack("I", aes_encrypted_data_length) + aes_encrypted_data
+		encrypt_target_length = (len(data) / 16 + 1) * 16
+		while (encrypt_target_length > 0):
+			packet += self.__encrypt_data_less_than_2048_bytes_by_aes(data[:2047])
 
 			data = data[2048:]
-			data_length = len(data)
-			encrypt_target_length = (data_length / 16 + 1) * 16
-
-		aes_encrypted_data = self.encrypt_aes(data)
-		aes_encrypted_data_length = len(aes_encrypted_data)
-		packet += struct.pack("I", aes_encrypted_data_length) + aes_encrypted_data
+			encrypt_target_length = (len(data) / 16 + 1) * 16
 
 		return packet
+
+	def __encrypt_data_less_than_2048_bytes_by_aes(self, data):
+		#data : less then 2048 bytes
+		aes_encrypted_data = self.encrypt_by_aes(data)
+		aes_encrypted_data_length = len(aes_encrypted_data)
+		
+		return struct.pack("I", aes_encrypted_data_length) + aes_encrypted_data
