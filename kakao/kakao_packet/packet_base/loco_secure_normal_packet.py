@@ -1,10 +1,14 @@
 #!/usr/bin/python
 
 import struct
+import sys
+import os
 
 from loco_packet_base import LocoPacketBase
 from loco_packet import LocoPacket
 
+sys.path.append(os.path.abspath("../packet_config"))
+import loco_config
 
 class LocoSequreNormalPacket(LocoPacketBase):
 	def __init__(self):
@@ -18,12 +22,12 @@ class LocoSequreNormalPacket(LocoPacketBase):
 	def __encrypt_data_by_aes(self, data):
 		packet = ""
 
-		encrypt_target_length = (len(data) / self.block_size + 1) * self.block_size
+		encrypt_target_length = (len(data) / loco_config.BLOCK_SIZE + 1) * loco_config.BLOCK_SIZE
 		while(encrypt_target_length > 0):
 			packet += self.__encrypt_data_less_than_2048_bytes_by_aes(data[:2047])
 
 			data = data[2048:]
-			encrypt_target_length = ((len(data) / self.block_size + 1) * self.block_size, 0) [len(data) == 0]
+			encrypt_target_length = ((len(data) / loco_config.BLOCK_SIZE + 1) * loco_config.BLOCK_SIZE, 0) [len(data) == 0]
 
 		return packet
 

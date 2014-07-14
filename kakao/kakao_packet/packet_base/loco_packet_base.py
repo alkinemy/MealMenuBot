@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys
+import os
 from binascii import unhexlify
 
 try:
@@ -10,18 +11,15 @@ except ImportError, e:
 	print("Import Error %s" % e)
 	sys.exit()
 
-class LocoPacketBase:
-	def __init__(self):
-		self.block_size = 16
-		self.aes = {}
-		self.aes["key"] = "\x00" * self.block_size #TODO Change AES key
-		self.aes["IV"] = "locoforever\x00\x00\x00\x00\x00"
+sys.path.append(os.path.abspath("../packet_config"))
+import loco_config
 
+class LocoPacketBase:
 	def create(self, command, args):
 		return
 
 	def encrypt_by_aes(self, data):
-		aes = AES.new(key=self.aes["key"], mode=AEB.MODE_CBC, IV=self.aes["IV"])
+		aes = AES.new(key=loco_config.AES["key"], mode=AES.MODE_CBC, IV=loco_config.AES["IV"])
 		padded_data = self.encode_by_pkcs7(data)
 
 		return aes.encrypt(padded_data)
@@ -36,6 +34,6 @@ class LocoPacketBase:
 
 	def __encode_by_pkcs7(self, data):
 		data_length = len(data)
-		amount_to_pad = self.block_size + (0, - (data_length % self.block_size)) [amount_to_pad != 0]
+		amount_to_pad = loco_config.BLOCK_SIZE + (0, - (data_length % loco_config.BLOCK_SIZE)) [amount_to_pad != 0]
 
 		return data + unhexlify("%02x" % amount_to_pad) * amount_to_pad
