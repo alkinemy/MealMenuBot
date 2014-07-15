@@ -2,17 +2,21 @@
 #-*- coding: utf-8 -*-
 
 import struct
+import sys
+import os
 
 from binascii import hexlify
 from bson import decode_all
 
+from functools import reduce
+
 try:
 	from Crypto.Cipher import AES
-except ImportError, e:
+except ImportError as e:
 	print("Import Error %s" % e)
 	sys.exit()
 
-sys.path.append(os.path.abspath("../kakao_config"))
+sys.path.append(os.path.abspath("../packet_config"))
 import loco_config
 
 class LocoPacketTranslator:
@@ -102,3 +106,10 @@ class LocoPacketTranslator:
 
 	def __decode_by_pkcs7(self, data):
 		return data[:-int(hexlify(data[-1]))]
+
+	def print_packet(self):
+		#패킷을 직접 콘솔로 입력받아 출력
+		data = input("input code: ")
+		byte_data = reduce(lambda x, y : x + y, map(lambda x : struct.pack("B", int(x, 16)), data.split(" ")))
+		
+		print (self.__translate_hexcode(byte_data))
