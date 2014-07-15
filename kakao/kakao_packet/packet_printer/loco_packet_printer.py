@@ -12,14 +12,17 @@ sys.path.append(os.path.abspath("../kakao_config"))
 import loco_config
 
 class LocoPacketPrinter:
-	def print_packet(self):
+	def print(self, data):
+		pass
+
+	def translate_hexcode(self, hexcode):
 		pass
 
 	def __decrypt_by_aes(self, data):
 		aes = AES.new(key=loco_config.AES["key"], mode=AES.MODE_CBC, IV=loco_config.AES["IV"])
-		padding = aes.decrypt(data)
+		padded_data = aes.decrypt(data)
 
-		return self.__decode_by_pkcs7(data)
+		return self.__decode_by_pkcs7(padded_data)
 
 	def __decode_by_pkcs7(self, data):
 		return data[:-int(hexlify(data[-1]))]
