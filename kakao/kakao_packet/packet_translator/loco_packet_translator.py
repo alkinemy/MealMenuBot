@@ -11,10 +11,7 @@ except ImportError, e:
 sys.path.append(os.path.abspath("../kakao_config"))
 import loco_config
 
-class LocoPacketPrinter:
-	def print(self, data):
-		pass
-
+class LocoPacketTranslator:
 	def translate_hexcode(self, hexcode):
 		pass
 
