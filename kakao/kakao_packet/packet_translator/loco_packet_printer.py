@@ -27,7 +27,7 @@ class LocoPacketPrinter:
 			self.data = input("input hexcode: ")
 			self.data = reduce(lambda x, y : x + y, map(lambda x : struct.pack("B", int(x, 16)), self.data.split(" ")))
 			
-			print(self.receive_and_translate())
+			self.__print_response(self.receive_and_translate())
 		except Exception as e:
 			print("Exception occurred : %s" % e)
 
@@ -36,9 +36,10 @@ class LocoPacketPrinter:
 		self.data = self.data[4:]
 		
 		if (self.__is_loco_packet(head)):
+			print("----Start base packet printing----")
 			return self.__receive_and_translate_loco_packet(head)
 		else:
-			print("secure")
+			print("----Start secure packet printing----")
 			return self.__receive_and_translate_loco_secure_packet(head)
 		
 	def __is_loco_packet(self, head):
@@ -116,7 +117,15 @@ class LocoPacketPrinter:
 
 	def __translate_bytes(self, data):
 		return reduce(lambda x, y : x + " " + y, map(lambda x : format(int(x), "02x"), data))
-
+	def __print_response(self, data):
+		print("    %s : %s" % ("packet_id", data["packet_id"]))
+		print("    %s : %s" % ("method", data["method"]))
+		print("    %s : %s" % ("status_code", data["status_code"]))
+		print("    %s : %s" % ("body_type", data["body_type"]))
+		print("    %s : %s" % ("body_length", data["body_length"]))
+		
+		if (data["body_length"] > 0):
+			print("    %s : %s" % ("body_contents", data["body_contents"]))
 
 
 if (__name__ == "__main__"):
