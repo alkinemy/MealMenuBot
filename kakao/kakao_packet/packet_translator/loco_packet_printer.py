@@ -23,10 +23,13 @@ import loco_config
 #개발 중에 패킷 확인을 위한 클래스
 class LocoPacketPrinter:
 	def print_packet(self):
-		self.data = input("input hexcode: ")
-		self.data = reduce(lambda x, y : x + y, map(lambda x : struct.pack("B", int(x, 16)), self.data.split(" ")))
-		
-		print(self.receive_and_translate())
+		try:
+			self.data = input("input hexcode: ")
+			self.data = reduce(lambda x, y : x + y, map(lambda x : struct.pack("B", int(x, 16)), self.data.split(" ")))
+			
+			print(self.receive_and_translate())
+		except Exception as e:
+			print("Exception occurred : %s" % e)
 
 	def receive_and_translate(self):
 		head = self.data[:4]
@@ -43,7 +46,9 @@ class LocoPacketPrinter:
 
 	def __receive_and_translate_loco_packet(self, head):
 		result = self.__translate_packet_header(head)
-		result["body_contents"] = decode_all(self.data[18:])[0]
+
+		if (self.data[18:]):
+			result["body_contents"] = decode_all(self.data[18:])[0]
 
 		return result
 
@@ -68,7 +73,9 @@ class LocoPacketPrinter:
 		result["method"] = body[6:17]
 		result["body_type"] = body[17:18]
 		result["body_length"] = struct.unpack("I", body[18:22])[0]
-		result["body_contents"] = decode_all(body[22:])[0]
+
+		if (body[22:]):
+			result["body_contents"] = decode_all(body[22:])[0]
 
 		return result
 
