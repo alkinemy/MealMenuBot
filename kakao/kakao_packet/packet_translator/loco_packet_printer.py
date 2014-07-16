@@ -27,7 +27,6 @@ class LocoPacketPrinter:
 		self.data = reduce(lambda x, y : x + y, map(lambda x : struct.pack("B", int(x, 16)), self.data.split(" ")))
 		
 		print(self.receive_and_translate())
-		print("\n")
 
 	def receive_and_translate(self):
 		head = self.data[:4]
@@ -40,7 +39,7 @@ class LocoPacketPrinter:
 			return self.__receive_and_translate_loco_secure_packet(head)
 		
 	def __is_loco_packet(self, head):
-		return (head == b"\x02\x00\x00\x00")
+		return (head == b"\x02\x00\x00\x00") or (head == b"\xFF\xFF\xFF\xFF")
 
 	def __receive_and_translate_loco_packet(self, head):
 		result = self.__translate_packet_header(head)
@@ -60,30 +59,32 @@ class LocoPacketPrinter:
 			entire_body += body
 			recv_entire_body_length += len(body)
 
-		result = self.__translate_hexcode(entire_body)
+		return self.__translate_loco_packet(entire_body)
+
+	def __translate_loco_packet(self, body):
+		result = {}
+		result["packet_id"] = body[0:4]
+		result["status_code"] = body[4:6]
+		result["method"] = body[6:17]
+		result["body_type"] = body[17:18]
+		result["body_length"] = struct.unpack("I", body[18:22])[0]
 
 		return result
 
+
 	def __receive_and_decrypt_by_aes(self, head):
-		aes_encrypted_data = ""
+		aes_encrypted_data = b""
 		aes_encrypted_data_length = struct.unpack("I", head)[0]
 		received_aes_encrypted_data_length = 0
 
 		while(received_aes_encrypted_data_length < aes_encrypted_data_length):
 			length = aes_encrypted_data_length - received_aes_encrypted_data_length
 			received = self.data[:length]
+			self.data = self.data[length:]
 			aes_encrypted_data += received
 			received_aes_encrypted_data_length += len(received)
-
-			self.data = self.data[length:]
 		
 		return self.__decrypt_by_aes(aes_encrypted_data)
-	
-	def __translate_hexcode(self, hexcode):
-		result = self.__translate_packet_header(hexcode)
-		result["body_contents"] = decode_all(self.data[18:])[0]
-
-		return result
 
 	def __translate_packet_header(self, head):
 		result = {}
@@ -102,7 +103,8 @@ class LocoPacketPrinter:
 		return self.__decode_by_pkcs7(padded_data)
 
 	def __decode_by_pkcs7(self, data):
-		return data[:-int(hexlify(data[-1]))]
+		return data[:-int(format(data[-1], "02x"), 16)]
+#return data[:-int(hexlify(data[-1]))]
 
 
 
