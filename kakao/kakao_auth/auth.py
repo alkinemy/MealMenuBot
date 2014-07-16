@@ -91,6 +91,9 @@ class KakaoAuth:
 	def get_session_key(self):
 		return self.__session_key
 
+	def get_device_uuid(self):
+		return self.__data["device_uuid"]
+
 	def get_user_key(self):
 		return self.__session_key + "-" + self.__data["device_uuid"]
 
