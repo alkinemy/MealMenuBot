@@ -7,7 +7,7 @@ from binascii import unhexlify
 try:
 	import rsa
 	from Crypto.Cipher import AES
-except ImportError, e:
+except ImportError as e:
 	print("Import Error %s" % e)
 	sys.exit()
 

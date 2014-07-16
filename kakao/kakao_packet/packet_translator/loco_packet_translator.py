@@ -5,11 +5,11 @@ import struct
 import sys
 import os
 
-from bson import decode_all
 from binascii import hexlify
 
 try:
 	from Crypto.Cipher import AES
+	from bson import decode_all
 except ImportError as e:
 	print("Import Error %s" % e)
 	sys.exit()

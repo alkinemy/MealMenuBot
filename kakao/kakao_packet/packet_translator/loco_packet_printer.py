@@ -6,12 +6,11 @@ import sys
 import os
 
 from binascii import hexlify
-from bson import decode_all
-
 from functools import reduce
 
 try:
 	from Crypto.Cipher import AES
+	from bson import decode_all
 except ImportError as e:
 	print("Import Error %s" % e)
 	sys.exit()

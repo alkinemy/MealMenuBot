@@ -5,7 +5,7 @@ from loco_packet_base import LocoPacketBase
 
 try:
 	from bson import BSON
-except ImportError, e:
+except ImportError as e:
 	print ("Import Error %s" % e)
 	sys.exit()
 
