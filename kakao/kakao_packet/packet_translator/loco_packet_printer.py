@@ -68,6 +68,7 @@ class LocoPacketPrinter:
 		result["method"] = body[6:17]
 		result["body_type"] = body[17:18]
 		result["body_length"] = struct.unpack("I", body[18:22])[0]
+		result["body_contents"] = decode_all(body[22:])[0]
 
 		return result
 
@@ -105,6 +106,9 @@ class LocoPacketPrinter:
 	def __decode_by_pkcs7(self, data):
 		return data[:-int(format(data[-1], "02x"), 16)]
 #return data[:-int(hexlify(data[-1]))]
+
+	def __translate_bytes(self, data):
+		return reduce(lambda x, y : x + " " + y, map(lambda x : format(int(x), "02x"), data))
 
 
 
