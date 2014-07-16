@@ -5,7 +5,6 @@ import struct
 import sys
 import os
 
-from binascii import hexlify
 from bson import decode_all
 
 try:
@@ -69,7 +68,7 @@ class LocoPacketTranslator:
 			return result
 
 	def __receive_and_decrypt_by_aes(self, head, socket):
-		aes_encrypted_data = ""
+		aes_encrypted_data = b""
 		aes_encrypted_data_length = struct.unpack("I", head)[0]
 		received_aes_encrypted_data_length = 0
 
@@ -103,4 +102,4 @@ class LocoPacketTranslator:
 		return self.__decode_by_pkcs7(padded_data)
 
 	def __decode_by_pkcs7(self, data):
-		return data[:-int(hexlify(data[-1]))]
+		return data[:-int(format(data[-1], "02x"), 16)]
