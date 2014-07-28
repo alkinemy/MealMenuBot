@@ -54,31 +54,19 @@ class LocoPacketPrinter:
 
 	def __receive_and_translate_loco_secure_packet(self, head):
 		entire_body = self.__receive_and_decrypt_by_aes(head)
+		print(self.__translate_bytes(entire_body))
 		entire_body_length = struct.unpack("I", entire_body[18:22])[0]
 		recv_entire_body_length = len(entire_body[22:])
+		print("1", recv_entire_body_length, entire_body_length)
 
 		while (recv_entire_body_length < entire_body_length):
-			head = self.data[:4]
+			inner_head = self.data[:4]
 			self.data = self.data[4:]
-			result = self.__receive_and_decrypt_by_aes(head)
-			entire_body += body
-			recv_entire_body_length += len(body)
+			result = self.__receive_and_decrypt_by_aes(inner_head)
+			entire_body += result
+			recv_entire_body_length += len(result)
 
 		return self.__translate_loco_packet(entire_body)
-
-	def __translate_loco_packet(self, body):
-		result = {}
-		result["packet_id"] = body[0:4]
-		result["status_code"] = body[4:6]
-		result["method"] = body[6:17]
-		result["body_type"] = body[17:18]
-		result["body_length"] = struct.unpack("I", body[18:22])[0]
-
-		if (body[22:]):
-			result["body_contents"] = decode_all(body[22:])[0]
-
-		return result
-
 
 	def __receive_and_decrypt_by_aes(self, head):
 		aes_encrypted_data = b""
@@ -93,6 +81,19 @@ class LocoPacketPrinter:
 			received_aes_encrypted_data_length += len(received)
 		
 		return self.__decrypt_by_aes(aes_encrypted_data)
+
+	def __translate_loco_packet(self, body):
+		result = {}
+		result["packet_id"] = body[0:4]
+		result["status_code"] = body[4:6]
+		result["method"] = body[6:17]
+		result["body_type"] = body[17:18]
+		result["body_length"] = struct.unpack("I", body[18:22])[0]
+
+		if (body[22:]):
+			result["body_contents"] = decode_all(body[22:])[0]
+
+		return result
 
 	def __translate_packet_header(self, head):
 		result = {}
@@ -112,10 +113,10 @@ class LocoPacketPrinter:
 
 	def __decode_by_pkcs7(self, data):
 		return data[:-int(format(data[-1], "02x"), 16)]
-#return data[:-int(hexlify(data[-1]))]
 
 	def __translate_bytes(self, data):
 		return reduce(lambda x, y : x + " " + y, map(lambda x : format(int(x), "02x"), data))
+
 	def __print_response(self, data):
 		print("    %s : %s" % ("packet_id", data["packet_id"]))
 		print("    %s : %s" % ("method", data["method"]))
